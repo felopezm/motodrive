@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="MotoDrive — panel de gestión de inventario de motocicletas" />
+  <title>MotoDrive · Inventario de Motocicletas</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23ff5a1f'/%3E%3Cpath d='M9 21a3 3 0 1 0 0-.01M23 21a3 3 0 1 0 0-.01M9 21l5-7h5l4 7M14 14l-2-3h-2' stroke='white' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  <script>
+    // Aplica el tema antes de pintar para evitar parpadeo
+    (function () {
+      var t = null;
+      try { t = localStorage.getItem('motodrive-theme'); } catch (e) {}
+      if (!t) t = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <!-- ================= ICONOS SVG ================= -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="i-logo" viewBox="0 0 24 24"><circle cx="5.5" cy="16.5" r="3.5"/><circle cx="18.5" cy="16.5" r="3.5"/><path d="M5.5 16.5 10 10h5l3.5 6.5M10 10 8.5 7H6M15 10l1.5-3H19"/></symbol>
+      <symbol id="i-dashboard" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></symbol>
+      <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+      <symbol id="i-tag" viewBox="0 0 24 24"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z"/><circle cx="7.5" cy="7.5" r="1.5"/></symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+      <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+      <symbol id="i-edit" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></symbol>
+      <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6"/></symbol>
+      <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></symbol>
+      <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+      <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></symbol>
+      <symbol id="i-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+      <symbol id="i-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+      <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+      <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></symbol>
+      <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></symbol>
+      <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></symbol>
+      <symbol id="i-gauge" viewBox="0 0 24 24"><path d="M12 14l4-4"/><path d="M3.3 19a10 10 0 1 1 17.4 0"/></symbol>
+      <symbol id="i-money" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></symbol>
+      <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8Z"/></symbol>
+      <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
+      <symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></symbol>
+      <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15.5-6.3L21 8M21 3v5h-5M21 12a9 9 0 0 1-15.5 6.3L3 16M3 21v-5h5"/></symbol>
+      <symbol id="i-sort" viewBox="0 0 24 24"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></symbol>
+      <symbol id="i-database" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.7 4 3 9 3s9-1.3 9-3V5M3 12c0 1.7 4 3 9 3s9-1.3 9-3"/></symbol>
+      <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></symbol>
+      <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+    </defs>
+  </svg>
+
+  <div class="app">
+    <!-- ================= SIDEBAR ================= -->
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="#dashboard" aria-label="MotoDrive inicio">
+        <span class="brand-mark"><svg class="icon"><use href="#i-logo"/></svg></span>
+        <span class="brand-text">Moto<strong>Drive</strong></span>
+      </a>
+      <nav class="nav" aria-label="Navegación principal">
+        <a href="#dashboard" class="nav-link" data-view="dashboard"><svg class="icon"><use href="#i-dashboard"/></svg><span>Dashboard</span></a>
+        <a href="#inventario" class="nav-link" data-view="inventario"><svg class="icon"><use href="#i-list"/></svg><span>Inventario</span></a>
+        <a href="#marcas" class="nav-link" data-view="marcas"><svg class="icon"><use href="#i-tag"/></svg><span>Marcas</span></a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="db-status" id="dbStatus" title="Estado de la base de datos">
+          <span class="dot"></span>
+          <div>
+            <strong>PostgreSQL</strong>
+            <small id="dbStatusText">Verificando…</small>
+          </div>
+        </div>
+      </div>
+    </aside>
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+    <!-- ================= MAIN ================= -->
+    <main class="main">
+      <header class="topbar">
+        <button class="icon-btn only-mobile" id="menuBtn" aria-label="Abrir menú"><svg class="icon"><use href="#i-menu"/></svg></button>
+        <div class="topbar-title">
+          <p class="eyebrow" id="viewEyebrow">Resumen general</p>
+          <h1 id="viewTitle">Dashboard</h1>
+        </div>
+        <div class="topbar-actions">
+          <button class="icon-btn" id="themeBtn" aria-label="Cambiar tema" title="Cambiar tema claro/oscuro">
+            <svg class="icon icon-sun"><use href="#i-sun"/></svg>
+            <svg class="icon icon-moon"><use href="#i-moon"/></svg>
+          </button>
+          <button class="btn btn-primary" id="newMotoBtn"><svg class="icon"><use href="#i-plus"/></svg><span>Nueva motocicleta</span></button>
+        </div>
+      </header>
+
+      <!-- ---------- VISTA: DASHBOARD ---------- -->
+      <section class="view" id="view-dashboard" aria-labelledby="viewTitle">
+        <div class="kpi-grid" id="kpiGrid"></div>
+        <div class="dash-grid">
+          <article class="card">
+            <header class="card-head">
+              <div><h2>Inventario por marca</h2><p>Unidades y valor comercial</p></div>
+            </header>
+            <div class="bar-chart" id="brandChart"></div>
+          </article>
+          <article class="card">
+            <header class="card-head">
+              <div><h2>Distribución por color</h2><p>Color principal (ENUM)</p></div>
+            </header>
+            <div class="color-chart" id="colorChart"></div>
+          </article>
+          <article class="card card-wide">
+            <header class="card-head">
+              <div><h2>Ingresos recientes</h2><p>Últimos registros persistidos</p></div>
+              <a href="#inventario" class="btn btn-ghost btn-sm">Ver inventario <svg class="icon"><use href="#i-right"/></svg></a>
+            </header>
+            <ul class="recent-list" id="recentList"></ul>
+          </article>
+        </div>
+      </section>
+
+      <!-- ---------- VISTA: INVENTARIO ---------- -->
+      <section class="view" id="view-inventario" hidden>
+        <div class="card">
+          <div class="toolbar">
+            <label class="search">
+              <svg class="icon"><use href="#i-search"/></svg>
+              <input type="search" id="fSearch" placeholder="Buscar por modelo, marca o descripción…" aria-label="Buscar" />
+            </label>
+            <select id="fMarca" aria-label="Filtrar por marca"><option value="">Todas las marcas</option></select>
+            <select id="fColor" aria-label="Filtrar por color"><option value="">Todos los colores</option></select>
+            <select id="fSeguro" aria-label="Filtrar por seguro">
+              <option value="">Seguro: todos</option>
+              <option value="true">Aseguradas</option>
+              <option value="false">Sin seguro</option>
+            </select>
+            <button class="btn btn-ghost" id="fReset" title="Limpiar filtros"><svg class="icon"><use href="#i-refresh"/></svg><span>Limpiar</span></button>
+          </div>
+
+          <div class="table-wrap">
+            <table class="table" id="motoTable">
+              <thead>
+                <tr>
+                  <th class="col-photo"><span class="sr-only">Foto</span></th>
+                  <th><button class="th-sort" data-sort="modelo">Modelo <svg class="icon"><use href="#i-sort"/></svg></button></th>
+                  <th><button class="th-sort" data-sort="anio">Año <svg class="icon"><use href="#i-sort"/></svg></button></th>
+                  <th class="num"><button class="th-sort" data-sort="cilindrada">Cilindrada <svg class="icon"><use href="#i-sort"/></svg></button></th>
+                  <th class="num"><button class="th-sort" data-sort="kilometraje">Kilometraje <svg class="icon"><use href="#i-sort"/></svg></button></th>
+                  <th class="num"><button class="th-sort" data-sort="precio">Precio <svg class="icon"><use href="#i-sort"/></svg></button></th>
+                  <th>Color</th>
+                  <th>Seguro</th>
+                  <th><button class="th-sort" data-sort="ingreso">Ingreso <svg class="icon"><use href="#i-sort"/></svg></button></th>
+                  <th class="col-actions"><span class="sr-only">Acciones</span></th>
+                </tr>
+              </thead>
+              <tbody id="motoTbody"></tbody>
+            </table>
+          </div>
+
+          <footer class="pager">
+            <div class="pager-info">
+              <label>Filas
+                <select id="pageSize">
+                  <option>5</option><option selected>10</option><option>20</option><option>50</option>
+                </select>
+              </label>
+              <span id="pagerText">—</span>
+            </div>
+            <nav class="pager-nav" id="pagerNav" aria-label="Paginación"></nav>
+          </footer>
+        </div>
+      </section>
+
+      <!-- ---------- VISTA: MARCAS ---------- -->
+      <section class="view" id="view-marcas" hidden>
+        <div class="card">
+          <header class="card-head">
+            <div><h2>Registrar marca</h2><p>Tabla padre de la relación 1:N con motocicletas</p></div>
+          </header>
+          <form class="brand-form" id="brandForm" novalidate>
+            <input type="hidden" id="brandId" />
+            <div class="field">
+              <label for="brandNombre">Nombre de la marca</label>
+              <input id="brandNombre" maxlength="80" placeholder="Ej. Royal Enfield" required />
+              <small class="error" data-error="nombre"></small>
+            </div>
+            <div class="field">
+              <label for="brandPais">País de origen</label>
+              <input id="brandPais" maxlength="60" placeholder="Ej. India" required />
+              <small class="error" data-error="pais_origen"></small>
+            </div>
+            <div class="brand-form-actions">
+              <button type="button" class="btn btn-ghost" id="brandCancel" hidden>Cancelar</button>
+              <button type="submit" class="btn btn-primary" id="brandSubmit"><svg class="icon"><use href="#i-plus"/></svg><span>Agregar marca</span></button>
+            </div>
+          </form>
+        </div>
+        <div class="brand-grid" id="brandGrid"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ================= MODAL: FORMULARIO MOTOCICLETA ================= -->
+  <dialog class="modal modal-lg" id="motoModal" aria-labelledby="motoModalTitle">
+    <form id="motoForm" novalidate>
+      <header class="modal-head">
+        <div>
+          <p class="eyebrow">15 campos persistentes · PostgreSQL</p>
+          <h2 id="motoModalTitle">Nueva motocicleta</h2>
+        </div>
+        <button type="button" class="icon-btn" data-close aria-label="Cerrar"><svg class="icon"><use href="#i-x"/></svg></button>
+      </header>
+
+      <div class="modal-body">
+        <!-- Identificación (autogenerados) -->
+        <fieldset class="fs">
+          <legend>Identificación del registro <span class="hint">generados por la base de datos</span></legend>
+          <div class="grid-3">
+            <div class="field">
+              <label for="mId"><span class="fn">1</span> ID <span class="type">SERIAL · PK</span></label>
+              <input id="mId" readonly placeholder="Automático" />
+            </div>
+            <div class="field">
+              <label for="mUuid"><span class="fn">3</span> UUID de registro <span class="type">UUID</span></label>
+              <input id="mUuid" readonly placeholder="gen_random_uuid()" class="mono" />
+            </div>
+            <div class="field">
+              <label for="mCreado"><span class="fn">14</span> Fecha y hora de creación <span class="type">TIMESTAMPTZ</span></label>
+              <input id="mCreado" readonly placeholder="NOW()" />
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- Datos generales -->
+        <fieldset class="fs">
+          <legend>Datos generales</legend>
+          <div class="grid-2">
+            <div class="field">
+              <label for="mModelo"><span class="fn">2</span> Modelo / nombre <span class="type">VARCHAR(120)</span> <span class="req">*</span></label>
+              <input id="mModelo" name="modelo" maxlength="120" placeholder="Ej. MT-07" autocomplete="off" />
+              <small class="error" data-error="modelo"></small>
+            </div>
+            <div class="field">
+              <label for="mMarca"><span class="fn">15</span> Marca <span class="type">INTEGER · FK</span> <span class="req">*</span></label>
+              <select id="mMarca" name="marca_id"><option value="">Selecciona una marca…</option></select>
+              <small class="error" data-error="marca_id"></small>
+            </div>
+            <div class="field">
+              <label for="mAnio"><span class="fn">4</span> Año de fabricación <span class="type">SMALLINT</span> <span class="req">*</span></label>
+              <input id="mAnio" name="anio_fabricacion" type="number" min="1900" step="1" placeholder="2025" />
+              <small class="error" data-error="anio_fabricacion"></small>
+            </div>
+            <div class="field">
+              <span class="label"><span class="fn">13</span> Color principal <span class="type">ENUM</span> <span class="req">*</span></span>
+              <div class="swatches" id="mColor" role="radiogroup" aria-label="Color principal"></div>
+              <small class="error" data-error="color_principal"></small>
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- Técnicos y comerciales -->
+        <fieldset class="fs">
+          <legend>Especificaciones técnicas y comerciales</legend>
+          <div class="grid-3">
+            <div class="field">
+              <label for="mCc"><span class="fn">6</span> Cilindrada <span class="type">INTEGER</span> <span class="req">*</span></label>
+              <div class="input-affix"><input id="mCc" name="cilindrada_cc" type="number" min="49" max="3000" step="1" placeholder="689" /><span>cc</span></div>
+              <small class="error" data-error="cilindrada_cc"></small>
+            </div>
+            <div class="field">
+              <label for="mKm"><span class="fn">11</span> Kilometraje <span class="type">DOUBLE PRECISION</span> <span class="req">*</span></label>
+              <div class="input-affix"><input id="mKm" name="kilometraje" type="number" min="0" step="0.01" placeholder="0.00" /><span>km</span></div>
+              <small class="error" data-error="kilometraje"></small>
+            </div>
+            <div class="field">
+              <label for="mPrecio"><span class="fn">5</span> Precio de venta <span class="type">NUMERIC(12,2)</span> <span class="req">*</span></label>
+              <div class="input-affix prefix"><span>$</span><input id="mPrecio" name="precio_venta" type="number" min="0" step="0.01" placeholder="35000000" /></div>
+              <small class="error" data-error="precio_venta"></small>
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- Inventario -->
+        <fieldset class="fs">
+          <legend>Control de inventario</legend>
+          <div class="grid-3">
+            <div class="field">
+              <label for="mFecha"><span class="fn">7</span> Fecha de ingreso <span class="type">DATE</span> <span class="req">*</span></label>
+              <input id="mFecha" name="fecha_ingreso" type="date" />
+              <small class="error" data-error="fecha_ingreso"></small>
+            </div>
+            <div class="field">
+              <label for="mHora"><span class="fn">8</span> Hora última inspección <span class="type">TIME</span></label>
+              <input id="mHora" name="hora_ultima_inspeccion" type="time" />
+              <small class="error" data-error="hora_ultima_inspeccion"></small>
+            </div>
+            <div class="field">
+              <span class="label"><span class="fn">9</span> ¿Está asegurada? <span class="type">BOOLEAN</span></span>
+              <label class="switch">
+                <input id="mSeguro" type="checkbox" role="switch" />
+                <span class="switch-track"><span class="switch-thumb"></span></span>
+                <span class="switch-label" id="mSeguroLabel">No asegurada</span>
+              </label>
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- Multimedia y descripción -->
+        <fieldset class="fs">
+          <legend>Multimedia y descripción</legend>
+          <div class="grid-media">
+            <div class="field">
+              <span class="label"><span class="fn">12</span> Fotografía <span class="type">BYTEA</span></span>
+              <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Subir fotografía">
+                <img id="photoPreview" alt="Vista previa" hidden />
+                <div class="dz-empty" id="dzEmpty">
+                  <svg class="icon"><use href="#i-upload"/></svg>
+                  <strong>Arrastra una imagen o haz clic</strong>
+                  <small>JPG, PNG o WEBP · máx. 2 MB</small>
+                </div>
+                <button type="button" class="dz-remove" id="photoRemove" hidden aria-label="Quitar fotografía"><svg class="icon"><use href="#i-x"/></svg></button>
+              </div>
+              <input type="file" id="photoInput" accept="image/jpeg,image/png,image/webp,image/gif" hidden />
+              <small class="error" data-error="fotografia"></small>
+            </div>
+            <div class="field">
+              <label for="mDesc"><span class="fn">10</span> Descripción / especificaciones <span class="type">TEXT</span></label>
+              <textarea id="mDesc" name="descripcion" rows="7" maxlength="2000" placeholder="Motor, suspensión, frenos, equipamiento, observaciones…"></textarea>
+              <div class="field-meta"><small class="error" data-error="descripcion"></small><small class="counter" id="descCounter">0 / 2000</small></div>
+            </div>
+          </div>
+        </fieldset>
+      </div>
+
+      <footer class="modal-foot">
+        <p class="muted"><span class="req">*</span> Campos obligatorios</p>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" data-close>Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="motoSubmit"><svg class="icon"><use href="#i-check"/></svg><span>Guardar</span></button>
+        </div>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- ================= MODAL: DETALLE ================= -->
+  <dialog class="modal modal-lg" id="detailModal" aria-labelledby="detailTitle">
+    <header class="modal-head">
+      <div>
+        <p class="eyebrow" id="detailEyebrow">Detalle</p>
+        <h2 id="detailTitle">—</h2>
+      </div>
+      <button type="button" class="icon-btn" data-close aria-label="Cerrar"><svg class="icon"><use href="#i-x"/></svg></button>
+    </header>
+    <div class="modal-body" id="detailBody"></div>
+    <footer class="modal-foot">
+      <p class="muted" id="detailUpdated"></p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" data-close>Cerrar</button>
+        <button type="button" class="btn btn-primary" id="detailEdit"><svg class="icon"><use href="#i-edit"/></svg><span>Editar</span></button>
+      </div>
+    </footer>
+  </dialog>
+
+  <!-- ================= MODAL: CONFIRMAR ================= -->
+  <dialog class="modal modal-sm" id="confirmModal" aria-labelledby="confirmTitle">
+    <div class="confirm">
+      <span class="confirm-icon"><svg class="icon"><use href="#i-trash"/></svg></span>
+      <h2 id="confirmTitle">¿Eliminar registro?</h2>
+      <p id="confirmText">Esta acción no se puede deshacer.</p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" data-close>Cancelar</button>
+        <button type="button" class="btn btn-danger" id="confirmOk"><svg class="icon"><use href="#i-trash"/></svg><span>Eliminar</span></button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- ================= TOASTS ================= -->
+  <div class="toasts" id="toasts" aria-live="polite" aria-atomic="false"></div>
+
+  <script src="/app.js" defer></script>
+</body>
+</html>

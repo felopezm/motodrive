@@ -1,0 +1,19 @@
+{
+  "name": "motodrive-web",
+  "version": "1.0.0",
+  "description": "CRUD de gestión de inventario de motocicletas (Node.js + PostgreSQL + Docker)",
+  "main": "src/server.js",
+  "private": true,
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "pg": "^8.13.1"
+  }
+}

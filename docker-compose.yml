@@ -1,0 +1,64 @@
+# =====================================================================
+#  MotoDrive · Orquestación de servicios
+#  - db  : PostgreSQL 16 con volumen persistente
+#  - web : API Node.js/Express + frontend estático
+#  Ambos se comunican por la red privada "motodrive_net".
+# =====================================================================
+name: motodrive
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: motodrive_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-motodrive}
+      POSTGRES_USER: ${POSTGRES_USER:-motodrive}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-motodrive_secret}
+      TZ: America/Bogota
+      PGTZ: America/Bogota
+    volumes:
+      - pgdata:/var/lib/postgresql/data              # persistencia de datos
+      - ./db/init.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
+    ports:
+      - "${DB_PORT:-5432}:5432"                      # opcional: acceso desde pgAdmin/DBeaver
+    networks:
+      - motodrive_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: motodrive-web:1.0.0
+    container_name: motodrive_web
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: db                                    # nombre del servicio = DNS interno de la red
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB:-motodrive}
+      DB_USER: ${POSTGRES_USER:-motodrive}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-motodrive_secret}
+      TZ: America/Bogota
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - motodrive_net
+
+volumes:
+  pgdata:
+    name: motodrive_pgdata
+
+networks:
+  motodrive_net:
+    name: motodrive_net
+    driver: bridge
