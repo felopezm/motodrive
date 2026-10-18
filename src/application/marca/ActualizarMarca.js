@@ -22,4 +22,5 @@ class ActualizarMarca {
   }
 }
 
+
 module.exports = ActualizarMarca;
