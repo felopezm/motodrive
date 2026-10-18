@@ -174,3 +174,21 @@ Los datos viven en el volumen `motodrive_pgdata`. `docker compose down` **no** b
 ## Comandos Docker
 
 Consulta [COMANDOS_DOCKER.md](COMANDOS_DOCKER.md)
+
+Puedes agregar una sección de Autores al final del README de MotoDrive. Como no incluiste los nombres, te dejo un bloque editable para completar con los integrantes del proyecto.
+
+Writing
+
+## Autores
+
+Proyecto desarrollado por:
+
+- Federico Lopez
+- Duban Cardona
+- Cristian Felipe Mora
+
+### Tecnologías y contribuciones
+
+El proyecto integra desarrollo frontend, backend, modelado de bases de datos, arquitectura de software, pruebas automatizadas y despliegue con Docker.
+
+### Proyecto académico
